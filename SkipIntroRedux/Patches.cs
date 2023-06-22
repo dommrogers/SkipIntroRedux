@@ -2,6 +2,7 @@
 using Il2Cpp;
 using Il2CppInterop.Runtime;
 using Il2CppTLD.News;
+using MelonLoader;
 
 namespace SkipIntroRedux;
 
@@ -10,10 +11,12 @@ internal static class Patches
 {
 	private static bool BootUpdateRunning { get; set; }
 
+
 	[HarmonyPostfix]
 	[HarmonyPatch(typeof(BootUpdate), nameof(BootUpdate.Start))]
-	public static void BootUpdateIsRunning()
+	public static void BootUpdateIsRunning(BootUpdate __instance)
 	{
+		__instance.m_BootState = BootUpdate.BootState.Idle;
 		BootUpdateRunning = true;
 	}
 
