@@ -3,6 +3,7 @@ using Il2Cpp;
 using Il2CppInterop.Runtime;
 using Il2CppTLD.News;
 using MelonLoader;
+using System.Text.RegularExpressions;
 
 namespace SkipIntroRedux;
 
@@ -10,7 +11,36 @@ namespace SkipIntroRedux;
 internal static class Patches
 {
 	private static bool BootUpdateRunning { get; set; }
+	private static bool hasCrunched = false;
 
+
+	private static string _fileURL = "https://raw.githubusercontent.com/dommrogers/SkipIntroRedux/master/lines.txt";
+	public static string GetText()
+	{
+		string fileContent = new System.Net.WebClient().DownloadString(_fileURL);
+		string[] lines = Regex.Split(fileContent.Trim(), "\r\n|\r|\n");
+		return lines[UnityEngine.Random.Range(0, lines.Length)];
+	}
+
+	[HarmonyPatch(typeof(Localization), nameof(Localization.Get), new Type[] { typeof(string) })]
+	internal static class Localization_Get
+	{
+		internal static void Postfix(string key, ref string __result)
+		{
+			if (hasCrunched)
+			{
+				return;
+			}
+
+			if (key == "GAMEPLAY_DevMessageCrunch")
+			{
+				string timeofday = DateTime.Now.ToString();
+				__result = GetText();
+
+				hasCrunched = true;
+			}
+		}
+	}
 
 	[HarmonyPostfix]
 	[HarmonyPatch(typeof(BootUpdate), nameof(BootUpdate.Start))]
